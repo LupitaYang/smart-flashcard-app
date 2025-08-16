@@ -245,7 +245,12 @@
                     
                     <div class="form-group">
                         <label for="frontTextInput">Word/Phrase:</label>
-                        <input type="text" id="frontTextInput" class="form-control" placeholder="Enter word or phrase" required>
+                        <div class="input-with-audio">
+                            <input type="text" id="frontTextInput" class="form-control" placeholder="Enter word or phrase" required>
+                            <button type="button" id="frontTextAudioBtn" class="btn btn-audio" title="Listen to pronunciation">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
                         <button type="button" id="translateBtn" class="btn btn-secondary btn-small">
                             <i class="fas fa-language"></i> Auto Translate
                         </button>
@@ -265,7 +270,12 @@
 
                     <div class="form-group">
                         <label for="backTextInput">Translation:</label>
-                        <input type="text" id="backTextInput" class="form-control" placeholder="Enter translation" required>
+                        <div class="input-with-audio">
+                            <input type="text" id="backTextInput" class="form-control" placeholder="Enter translation" required>
+                            <button type="button" id="backTextAudioBtn" class="btn btn-audio" title="Listen to pronunciation">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -361,8 +371,132 @@
                 </div>
             </div>
         </div>
+
+        <!-- Profile Settings Modal -->
+        <div id="profileModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Profile Settings</h3>
+                    <button class="close-btn" id="closeProfile">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Profile Information -->
+                    <div class="profile-section">
+                        <h4>Personal Information</h4>
+                        <div class="profile-avatar-section">
+                            <div class="profile-avatar-large">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-info">
+                                <div class="form-group">
+                                    <label for="profileName">Full Name:</label>
+                                    <input type="text" id="profileName" class="form-control" placeholder="Enter your full name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileEmail">Email:</label>
+                                    <input type="email" id="profileEmail" class="form-control" placeholder="Enter your email" readonly>
+                                    <small class="form-text">Email cannot be changed for security reasons</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-buttons">
+                            <button id="updateProfileBtn" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Password Section -->
+                    <div class="profile-section">
+                        <h4>Password & Security</h4>
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password:</label>
+                            <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password:</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Enter new password (min 6 characters)">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmNewPassword">Confirm New Password:</label>
+                            <input type="password" id="confirmNewPassword" class="form-control" placeholder="Confirm new password">
+                        </div>
+                        <div class="profile-buttons">
+                            <button id="changePasswordBtn" class="btn btn-warning">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
+                            <button id="resetPasswordBtn" class="btn btn-secondary">
+                                <i class="fas fa-envelope"></i> Send Reset Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Account Management -->
+                    <div class="profile-section">
+                        <h4>Account Management</h4>
+                        <div class="account-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">📚</div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="profileTotalCards">0</span>
+                                    <span class="stat-label">Total Cards</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🔥</div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="profileStreak">0</span>
+                                    <span class="stat-label">Day Streak</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⏱️</div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="profileStudyTime">0h</span>
+                                    <span class="stat-label">Study Time</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="account-actions">
+                            <button id="downloadDataBtn" class="btn btn-secondary">
+                                <i class="fas fa-download"></i> Download My Data
+                            </button>
+                            <button id="deleteAccountBtn" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Premium Section -->
+                    <div class="profile-section premium-section">
+                        <h4>🌟 Premium Features</h4>
+                        <div class="premium-benefits">
+                            <div class="benefit-item">
+                                <i class="fas fa-infinity"></i>
+                                <span>Unlimited flashcards</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Advanced analytics</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-palette"></i>
+                                <span>Custom themes</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-users"></i>
+                                <span>Collaborative decks</span>
+                            </div>
+                        </div>
+                        <button id="upgradeToPremiumBtn" class="btn btn-premium">
+                            <i class="fas fa-crown"></i> Upgrade to Premium - $4.99/month
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="local-auth-app.js"></script>
+    <script src="working-auth-app.js"></script>
 </body>
 </html>
