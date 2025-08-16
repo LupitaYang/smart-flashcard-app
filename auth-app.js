@@ -38,14 +38,15 @@ class AuthenticatedFlashcardApp {
 
     // Firebase Configuration and Initialization
     initFirebase() {
-        // Firebase configuration - Replace with your actual config
+        // Firebase configuration - Your actual project config
         const firebaseConfig = {
-            apiKey: "demo-api-key",
-            authDomain: "smart-flashcards-demo.firebaseapp.com",
-            projectId: "smart-flashcards-demo",
-            storageBucket: "smart-flashcards-demo.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef123456"
+            apiKey: "AIzaSyDcIctwhyr2KcoGJwoAeOdSecJ3El3RdWI",
+            authDomain: "smart-flashcard-github.firebaseapp.com",
+            projectId: "smart-flashcard-github",
+            storageBucket: "smart-flashcard-github.firebasestorage.app",
+            messagingSenderId: "1028429279010",
+            appId: "1:1028429279010:web:1ea3012d102c210bb93f7b",
+            measurementId: "G-557SX1JDF5"
         };
 
         // Initialize Firebase (using compatibility mode)
