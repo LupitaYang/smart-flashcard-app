@@ -21,12 +21,102 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <div class="app-container">
+    <!-- Authentication Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <div class="auth-header">
+                <h2 id="authTitle">Welcome to Smart Flashcards</h2>
+                <p id="authSubtitle">Sign in to sync your progress across devices</p>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
+                </div>
+                <button id="loginBtn" class="btn btn-primary btn-large">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <button id="googleSignInBtn" class="btn btn-google">
+                    <i class="fab fa-google"></i> Sign in with Google
+                </button>
+                <p class="auth-switch">
+                    Don't have an account? <a href="#" id="showSignup">Sign up here</a>
+                </p>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signupForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="signupName">Full Name:</label>
+                    <input type="text" id="signupName" class="form-control" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email:</label>
+                    <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password:</label>
+                    <input type="password" id="signupPassword" class="form-control" placeholder="Create a password (min 6 characters)" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <span class="checkmark"></span>
+                        I agree to the <a href="#" id="showTerms">Terms of Service</a> and <a href="#" id="showPrivacy">Privacy Policy</a>
+                    </label>
+                </div>
+                <button id="signupBtn" class="btn btn-primary btn-large">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <button id="googleSignUpBtn" class="btn btn-google">
+                    <i class="fab fa-google"></i> Sign up with Google
+                </button>
+                <p class="auth-switch">
+                    Already have an account? <a href="#" id="showLogin">Sign in here</a>
+                </p>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="authLoading" class="auth-loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Please wait...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="mainApp" style="display: none;">
         <!-- Header -->
         <header class="app-header">
-            <h1><i class="fas fa-brain"></i> Smart Flashcards</h1>
+            <div class="header-left">
+                <h1><i class="fas fa-brain"></i> Smart Flashcards</h1>
+                <div class="user-info">
+                    <span class="welcome-text">Welcome, <span id="userName">User</span>!</span>
+                    <span class="user-plan">Free Plan</span>
+                </div>
+            </div>
             <div class="header-controls">
                 <button id="darkModeToggle" class="btn btn-secondary" title="Toggle Dark Mode">
                     <i class="fas fa-moon"></i>
@@ -37,6 +127,36 @@
                 <button id="settingsBtn" class="btn btn-secondary">
                     <i class="fas fa-cog"></i>
                 </button>
+                <div class="user-menu">
+                    <button id="userMenuBtn" class="btn btn-secondary user-avatar">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <div id="userDropdown" class="user-dropdown" style="display: none;">
+                        <div class="dropdown-header">
+                            <div class="user-avatar-large">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-details">
+                                <span class="user-name" id="dropdownUserName">User</span>
+                                <span class="user-email" id="dropdownUserEmail">user@example.com</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button id="profileBtn" class="dropdown-item">
+                            <i class="fas fa-user-edit"></i> Profile Settings
+                        </button>
+                        <button id="syncBtn" class="dropdown-item">
+                            <i class="fas fa-sync"></i> Sync Data
+                        </button>
+                        <button id="upgradeBtn" class="dropdown-item premium">
+                            <i class="fas fa-crown"></i> Upgrade to Premium
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button id="signOutBtn" class="dropdown-item danger">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -243,6 +363,6 @@
         </div>
     </div>
 
-    <script src="app-enhanced.js"></script>
+    <script src="auth-app.js"></script>
 </body>
 </html>

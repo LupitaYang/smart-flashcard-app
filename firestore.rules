@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // User's flashcards collection
+      match /flashcards/{cardId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // User's achievements collection
+      match /achievements/{achievementId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // User's study sessions collection (for analytics)
+      match /sessions/{sessionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Public shared decks (future feature)
+    match /public_decks/{deckId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // App statistics (anonymous usage data)
+    match /app_stats/{statId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
