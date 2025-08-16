@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Flashcard App</title>
+    <meta name="description" content="Intelligent flashcard app with spaced repetition learning for languages and any subject">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Flashcards">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,6 +28,9 @@
         <header class="app-header">
             <h1><i class="fas fa-brain"></i> Smart Flashcards</h1>
             <div class="header-controls">
+                <button id="darkModeToggle" class="btn btn-secondary" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
                 <button id="addCardBtn" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add Card
                 </button>
@@ -138,13 +155,30 @@
 
                     <div class="form-group">
                         <label for="categoryInput">Category:</label>
-                        <input type="text" id="categoryInput" class="form-control" placeholder="e.g., Daily Words, Piano Terms" list="categories">
-                        <datalist id="categories">
-                            <option value="Daily Words">
-                            <option value="Piano Terms">
-                            <option value="Grammar">
-                            <option value="Phrases">
-                        </datalist>
+                        <select id="categorySelect" class="form-control">
+                            <option value="">Select or type new category</option>
+                            <option value="🗣️ Daily Words">🗣️ Daily Words</option>
+                            <option value="🎹 Piano Terms">🎹 Piano Terms</option>
+                            <option value="📚 Grammar">📚 Grammar</option>
+                            <option value="💬 Phrases">💬 Phrases</option>
+                            <option value="🏢 Business">🏢 Business</option>
+                            <option value="🍽️ Food & Dining">🍽️ Food & Dining</option>
+                            <option value="✈️ Travel">✈️ Travel</option>
+                            <option value="🏥 Medical">🏥 Medical</option>
+                            <option value="custom">+ Add New Category</option>
+                        </select>
+                        <input type="text" id="categoryInput" class="form-control" placeholder="Enter new category name" style="display: none;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imageInput">Image (optional):</label>
+                        <div class="image-upload-container">
+                            <input type="file" id="imageInput" class="form-control" accept="image/*">
+                            <div id="imagePreview" class="image-preview" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview">
+                                <button type="button" id="removeImage" class="btn btn-small btn-secondary">Remove</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-buttons">
@@ -188,6 +222,18 @@
                         <input type="checkbox" id="showExamples" checked>
                     </div>
                     <div class="setting-group">
+                        <label>Enable swipe gestures:</label>
+                        <input type="checkbox" id="enableSwipe" checked>
+                    </div>
+                    <div class="setting-group">
+                        <label>Study reminders:</label>
+                        <input type="checkbox" id="studyReminders">
+                    </div>
+                    <div class="setting-group">
+                        <label>Reminder time:</label>
+                        <input type="time" id="reminderTime" value="19:00">
+                    </div>
+                    <div class="setting-group">
                         <button id="exportDataBtn" class="btn btn-secondary">Export Data</button>
                         <button id="importDataBtn" class="btn btn-secondary">Import Data</button>
                         <input type="file" id="importFile" accept=".json" style="display: none;">
@@ -197,6 +243,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app-enhanced.js"></script>
 </body>
 </html>
