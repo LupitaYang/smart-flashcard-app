@@ -30,6 +30,7 @@ class WorkingAuthFlashcardApp {
         this.studyTimer = null;
         this.sessionStartTime = null;
         this.currentImageData = null;
+        this.customCategories = [];
         
         this.init();
     }
@@ -335,8 +336,9 @@ class WorkingAuthFlashcardApp {
             stats: this.sessionStats,
             settings: this.settings,
             achievements: this.achievements,
+            customCategories: this.customCategories,
             exportDate: new Date().toISOString(),
-            version: '2.0'
+            version: '2.1'
         };
 
         const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
@@ -425,11 +427,13 @@ class WorkingAuthFlashcardApp {
         const statsKey = `stats_${this.user.uid}`;
         const settingsKey = `settings_${this.user.uid}`;
         const achievementsKey = `achievements_${this.user.uid}`;
+        const customCategoriesKey = `customCategories_${this.user.uid}`;
 
         const savedCards = localStorage.getItem(userKey);
         const savedStats = localStorage.getItem(statsKey);
         const savedSettings = localStorage.getItem(settingsKey);
         const savedAchievements = localStorage.getItem(achievementsKey);
+        const savedCustomCategories = localStorage.getItem(customCategoriesKey);
 
         if (savedCards) {
             this.cards = JSON.parse(savedCards);
@@ -446,6 +450,10 @@ class WorkingAuthFlashcardApp {
         if (savedAchievements) {
             this.achievements = JSON.parse(savedAchievements);
         }
+
+        if (savedCustomCategories) {
+            this.customCategories = JSON.parse(savedCustomCategories);
+        }
     }
 
     saveData() {
@@ -455,11 +463,13 @@ class WorkingAuthFlashcardApp {
         const statsKey = `stats_${this.user.uid}`;
         const settingsKey = `settings_${this.user.uid}`;
         const achievementsKey = `achievements_${this.user.uid}`;
+        const customCategoriesKey = `customCategories_${this.user.uid}`;
 
         localStorage.setItem(userKey, JSON.stringify(this.cards));
         localStorage.setItem(statsKey, JSON.stringify(this.sessionStats));
         localStorage.setItem(settingsKey, JSON.stringify(this.settings));
         localStorage.setItem(achievementsKey, JSON.stringify(this.achievements));
+        localStorage.setItem(customCategoriesKey, JSON.stringify(this.customCategories));
     }
 
     loadSampleCards() {
@@ -912,6 +922,14 @@ class WorkingAuthFlashcardApp {
             return;
         }
 
+        // Handle custom category
+        if (categorySelect.value === 'custom' && category) {
+            if (!this.customCategories.includes(category)) {
+                this.customCategories.push(category);
+                this.showNotification(`New category "${category}" created! 📁`, 'success');
+            }
+        }
+
         const newCard = {
             id: Date.now(),
             frontText,
@@ -934,7 +952,7 @@ class WorkingAuthFlashcardApp {
         this.cards.push(newCard);
         this.saveData();
         this.updateStats();
-        this.updateCategoryOptions();
+        this.updateCategoryDropdown();
 
         document.getElementById('addCardForm').reset();
         this.removeImage();
@@ -1068,6 +1086,7 @@ class WorkingAuthFlashcardApp {
         this.updateStats();
         this.updateSettings();
         this.updateCategoryOptions();
+        this.updateCategoryDropdown();
     }
 
     updateStats() {
@@ -1102,6 +1121,63 @@ class WorkingAuthFlashcardApp {
                 categoryFilter.appendChild(option);
             });
         }
+    }
+
+    // Enhanced Category Management
+    updateCategoryDropdown() {
+        const categorySelect = document.getElementById('categorySelect');
+        if (!categorySelect) return;
+
+        // Get default categories
+        const defaultCategories = [
+            '🗣️ Daily Words',
+            '🎹 Piano Terms',
+            '📚 Grammar',
+            '💬 Phrases',
+            '🏢 Business',
+            '🍽️ Food & Dining',
+            '✈️ Travel',
+            '🏥 Medical'
+        ];
+
+        // Clear existing options except the first two and last one
+        categorySelect.innerHTML = `
+            <option value="">Select or type new category</option>
+        `;
+
+        // Add default categories
+        defaultCategories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categorySelect.appendChild(option);
+        });
+
+        // Add custom categories
+        if (this.customCategories.length > 0) {
+            // Add separator
+            const separator = document.createElement('option');
+            separator.disabled = true;
+            separator.textContent = '── Custom Categories ──';
+            categorySelect.appendChild(separator);
+
+            // Add custom categories
+            this.customCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Add "Add New Category" option at the end
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = '+ Add New Category';
+        categorySelect.appendChild(customOption);
+
+        // Update category filter as well
+        this.updateCategoryOptions();
     }
 
     // Achievements System
@@ -1174,8 +1250,9 @@ class WorkingAuthFlashcardApp {
             stats: this.sessionStats,
             settings: this.settings,
             achievements: this.achievements,
+            customCategories: this.customCategories,
             exportDate: new Date().toISOString(),
-            version: '2.0'
+            version: '2.1'
         };
 
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1210,6 +1287,7 @@ class WorkingAuthFlashcardApp {
                         if (data.stats) this.sessionStats = { ...this.sessionStats, ...data.stats };
                         if (data.settings) this.settings = { ...this.settings, ...data.settings };
                         if (data.achievements) this.achievements = data.achievements;
+                        if (data.customCategories) this.customCategories = data.customCategories;
                         
                         this.saveData();
                         this.updateUI();
