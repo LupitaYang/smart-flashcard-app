@@ -245,7 +245,8 @@ class WorkingAuthFlashcardApp {
     // Profile Settings Methods
     showProfile() {
         document.getElementById('userDropdown').style.display = 'none';
-        document.getElementById('profileModal').style.display = 'flex';
+        const profileModal = document.getElementById('profileModal');
+        profileModal.style.display = 'flex';
         this.loadProfileData();
     }
 
