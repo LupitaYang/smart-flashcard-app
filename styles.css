@@ -1707,7 +1707,7 @@ body.modal-open .card-content {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--primary-color);
+    background: var(--accent-color);
     color: white;
     border: none;
     cursor: pointer;
@@ -1717,11 +1717,13 @@ body.modal-open .card-content {
     font-size: 14px;
     transition: all 0.2s ease;
     overflow: hidden;
+    box-shadow: 0 2px 8px var(--shadow-light);
 }
 
 .user-avatar:hover {
-    background: var(--primary-dark);
+    background: #5a67d8;
     transform: scale(1.05);
+    box-shadow: 0 4px 12px var(--shadow-medium);
 }
 
 .profile-picture {
@@ -1729,6 +1731,21 @@ body.modal-open .card-content {
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+}
+
+/* User Dropdown */
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px var(--shadow-medium);
+    border: 1px solid var(--border-color);
+    min-width: 280px;
+    z-index: 1000;
+    animation: dropdownSlide 0.2s ease-out;
+    overflow: hidden;
 }
 
 @keyframes dropdownSlide {
