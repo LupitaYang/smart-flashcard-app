@@ -187,18 +187,105 @@ class AuthenticatedFlashcardApp {
     signInWithGoogle() {
         this.showAuthLoading(true);
 
-        setTimeout(() => {
+        // Initialize Google Sign-In if not already done
+        if (typeof google === 'undefined' || !google.accounts) {
+            this.showNotification('Google Sign-In not available. Please try again later.', 'error');
+            this.showAuthLoading(false);
+            return;
+        }
+
+        // Configure Google Sign-In to request email and profile information
+        google.accounts.id.initialize({
+            client_id: 'your-google-client-id.apps.googleusercontent.com', // Replace with your actual client ID
+            callback: (response) => this.handleGoogleSignIn(response),
+            auto_select: false,
+            cancel_on_tap_outside: true
+        });
+
+        // Prompt for Google Sign-In
+        google.accounts.id.prompt((notification) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                // Fallback to popup if prompt is not displayed
+                google.accounts.oauth2.initTokenClient({
+                    client_id: 'your-google-client-id.apps.googleusercontent.com',
+                    scope: 'email profile',
+                    callback: (tokenResponse) => {
+                        this.fetchGoogleUserInfo(tokenResponse.access_token);
+                    }
+                }).requestAccessToken();
+            }
+        });
+    }
+
+    handleGoogleSignIn(response) {
+        try {
+            // Decode the JWT token to get user information
+            const payload = this.parseJwt(response.credential);
+            
             this.user = {
-                uid: 'google_' + Date.now(),
-                email: 'demo@gmail.com',
-                displayName: 'Demo User'
+                uid: 'google_' + payload.sub,
+                email: payload.email,
+                displayName: payload.name,
+                firstName: payload.given_name,
+                lastName: payload.family_name,
+                picture: payload.picture,
+                emailVerified: payload.email_verified
             };
 
             localStorage.setItem('currentUser', JSON.stringify(this.user));
-            this.showNotification('Welcome! 🎉', 'success');
+            this.showNotification(`Welcome, ${this.user.displayName}! 🎉`, 'success');
             this.onUserSignedIn();
             this.showAuthLoading(false);
-        }, 1000);
+        } catch (error) {
+            console.error('Google Sign-In error:', error);
+            this.showNotification('Google Sign-In failed. Please try again.', 'error');
+            this.showAuthLoading(false);
+        }
+    }
+
+    async fetchGoogleUserInfo(accessToken) {
+        try {
+            const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            
+            const userInfo = await response.json();
+            
+            this.user = {
+                uid: 'google_' + userInfo.id,
+                email: userInfo.email,
+                displayName: userInfo.name,
+                firstName: userInfo.given_name,
+                lastName: userInfo.family_name,
+                picture: userInfo.picture,
+                emailVerified: userInfo.verified_email
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(this.user));
+            this.showNotification(`Welcome, ${this.user.displayName}! 🎉`, 'success');
+            this.onUserSignedIn();
+            this.showAuthLoading(false);
+        } catch (error) {
+            console.error('Failed to fetch Google user info:', error);
+            this.showNotification('Failed to get user information. Please try again.', 'error');
+            this.showAuthLoading(false);
+        }
+    }
+
+    parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (error) {
+            console.error('Failed to parse JWT token:', error);
+            throw error;
+        }
     }
 
     signOut() {
@@ -245,6 +332,39 @@ class AuthenticatedFlashcardApp {
         document.getElementById('userName').textContent = displayName.split(' ')[0];
         document.getElementById('dropdownUserName').textContent = displayName;
         document.getElementById('dropdownUserEmail').textContent = email;
+
+        // Update user avatar with profile picture if available
+        const userAvatarElements = document.querySelectorAll('.user-avatar, .user-avatar-large, .profile-avatar-large');
+        userAvatarElements.forEach(avatar => {
+            if (this.user.picture) {
+                avatar.innerHTML = `<img src="${this.user.picture}" alt="Profile" class="profile-picture">`;
+            } else {
+                avatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+        });
+    }
+    loadProfileData() {
+        if (!this.user) return;
+
+        // Load current user data into profile form
+        document.getElementById('profileName').value = this.user.displayName || '';
+        document.getElementById('profileEmail').value = this.user.email || '';
+        
+        // Update profile avatar with picture if available
+        const profileAvatar = document.querySelector('.profile-avatar-large');
+        if (this.user.picture) {
+            profileAvatar.innerHTML = `<img src="${this.user.picture}" alt="Profile" class="profile-picture">`;
+        } else {
+            profileAvatar.innerHTML = '<i class="fas fa-user"></i>';
+        }
+        
+        // Update profile stats
+        document.getElementById('profileTotalCards').textContent = this.cards.length;
+        document.getElementById('profileStreak').textContent = this.sessionStats.streak;
+        
+        const totalHours = Math.floor(this.sessionStats.totalStudyTime / 3600);
+        const totalMinutes = Math.floor((this.sessionStats.totalStudyTime % 3600) / 60);
+        document.getElementById('profileStudyTime').textContent = totalHours > 0 ? `${totalHours}h ${totalMinutes}m` : `${totalMinutes}m`;
     }
 
     // Profile Settings Methods
@@ -300,6 +420,14 @@ class AuthenticatedFlashcardApp {
         // Load current user data into profile form
         document.getElementById('profileName').value = this.user.displayName || '';
         document.getElementById('profileEmail').value = this.user.email || '';
+        
+        // Update profile avatar with picture if available
+        const profileAvatar = document.querySelector('.profile-avatar-large');
+        if (this.user.picture) {
+            profileAvatar.innerHTML = `<img src="${this.user.picture}" alt="Profile" class="profile-picture">`;
+        } else {
+            profileAvatar.innerHTML = '<i class="fas fa-user"></i>';
+        }
         
         // Update profile stats
         document.getElementById('profileTotalCards').textContent = this.cards.length;
