@@ -147,7 +147,7 @@ class EnhancedPronunciation {
         return null;
     }
 
-    // Enhanced browser TTS with better voice selection
+    // Enhanced browser TTS with better voice selection and mobile support
     async fallbackToBrowserTTS(text, language) {
         return new Promise((resolve, reject) => {
             if (!('speechSynthesis' in window)) {
@@ -155,25 +155,61 @@ class EnhancedPronunciation {
                 return;
             }
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            
-            // Get available voices and select the best one for the language
+            // Cancel any ongoing speech
+            speechSynthesis.cancel();
+
+            // Wait for voices to load on mobile
+            const speakWithVoices = () => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Get available voices and select the best one for the language
+                const voices = speechSynthesis.getVoices();
+                const bestVoice = this.selectBestVoice(voices, language);
+                
+                if (bestVoice) {
+                    utterance.voice = bestVoice;
+                }
+                
+                utterance.lang = this.voiceMapping[language]?.voice || language;
+                utterance.rate = 0.9; // Slightly slower for better comprehension
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+
+                utterance.onend = () => resolve();
+                utterance.onerror = (error) => {
+                    console.error('Speech synthesis error:', error);
+                    reject(error);
+                };
+
+                // Mobile-specific: Add a small delay to ensure proper initialization
+                setTimeout(() => {
+                    try {
+                        speechSynthesis.speak(utterance);
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 100);
+            };
+
+            // Check if voices are already loaded
             const voices = speechSynthesis.getVoices();
-            const bestVoice = this.selectBestVoice(voices, language);
-            
-            if (bestVoice) {
-                utterance.voice = bestVoice;
+            if (voices.length > 0) {
+                speakWithVoices();
+            } else {
+                // Wait for voices to load (important for mobile)
+                speechSynthesis.onvoiceschanged = () => {
+                    speechSynthesis.onvoiceschanged = null; // Remove listener
+                    speakWithVoices();
+                };
+                
+                // Fallback timeout for mobile browsers that don't fire the event
+                setTimeout(() => {
+                    if (speechSynthesis.onvoiceschanged) {
+                        speechSynthesis.onvoiceschanged = null;
+                        speakWithVoices();
+                    }
+                }, 1000);
             }
-            
-            utterance.lang = this.voiceMapping[language]?.voice || language;
-            utterance.rate = 0.9; // Slightly slower for better comprehension
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-
-            utterance.onend = () => resolve();
-            utterance.onerror = (error) => reject(error);
-
-            speechSynthesis.speak(utterance);
         });
     }
 

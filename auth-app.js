@@ -894,7 +894,7 @@ class AuthenticatedFlashcardApp {
         card.difficulty = quality;
     }
 
-    // Enhanced Audio functionality for study mode
+    // Enhanced Audio functionality for study mode with mobile support
     async playAudio(side) {
         const text = side === 'front' ? this.currentCard.frontText : this.currentCard.backText;
         const lang = side === 'front' ? this.currentCard.frontLang : this.currentCard.backLang;
@@ -907,17 +907,20 @@ class AuthenticatedFlashcardApp {
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
         try {
-            // Use enhanced pronunciation system for native-quality audio
-            await this.pronunciation.pronounce(text, lang);
-        } catch (error) {
-            console.error('Enhanced pronunciation failed, using fallback:', error);
+            // For mobile browsers, always use browser TTS as it's more reliable
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
-            // Fallback to browser TTS
-            try {
+            if (isMobile) {
+                // Use browser TTS directly for mobile for better compatibility
                 await this.pronunciation.fallbackToBrowserTTS(text, lang);
-            } catch (fallbackError) {
-                console.error('All pronunciation methods failed:', fallbackError);
+                this.showNotification(`🔊 Playing pronunciation for "${text}"`, 'success');
+            } else {
+                // Use enhanced pronunciation system for desktop
+                await this.pronunciation.pronounce(text, lang);
             }
+        } catch (error) {
+            console.error('Audio playback failed:', error);
+            this.showNotification('Audio not available for this language', 'warning');
         } finally {
             // Reset button state
             button.classList.remove('playing');
