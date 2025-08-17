@@ -32,6 +32,9 @@ class WorkingAuthFlashcardApp {
         this.currentImageData = null;
         this.customCategories = [];
         
+        // Initialize enhanced pronunciation system
+        this.pronunciation = new EnhancedPronunciation();
+        
         this.init();
     }
 
@@ -819,19 +822,34 @@ class WorkingAuthFlashcardApp {
         card.difficulty = quality;
     }
 
-    // Audio functionality
-    playAudio(side) {
+    // Enhanced Audio functionality for study mode
+    async playAudio(side) {
         const text = side === 'front' ? this.currentCard.frontText : this.currentCard.backText;
         const lang = side === 'front' ? this.currentCard.frontLang : this.currentCard.backLang;
         
-        if ('speechSynthesis' in window) {
-            speechSynthesis.cancel();
+        const button = document.getElementById(side === 'front' ? 'frontAudioBtn' : 'backAudioBtn');
+        
+        // Add visual feedback
+        button.classList.add('playing');
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            // Use enhanced pronunciation system for native-quality audio
+            await this.pronunciation.pronounce(text, lang);
+        } catch (error) {
+            console.error('Enhanced pronunciation failed, using fallback:', error);
             
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = this.getSpeechLang(lang);
-            utterance.rate = 0.8;
-            
-            speechSynthesis.speak(utterance);
+            // Fallback to browser TTS
+            try {
+                await this.pronunciation.fallbackToBrowserTTS(text, lang);
+            } catch (fallbackError) {
+                console.error('All pronunciation methods failed:', fallbackError);
+            }
+        } finally {
+            // Reset button state
+            button.classList.remove('playing');
+            button.innerHTML = originalIcon;
         }
     }
 
@@ -847,8 +865,8 @@ class WorkingAuthFlashcardApp {
         return langMap[langCode] || 'en-US';
     }
 
-    // Audio functionality for add card form
-    playAddCardAudio(side) {
+    // Enhanced Audio functionality for add card form with native pronunciation
+    async playAddCardAudio(side) {
         let text, lang, button;
         
         if (side === 'front') {
@@ -866,28 +884,28 @@ class WorkingAuthFlashcardApp {
             return;
         }
 
-        if ('speechSynthesis' in window) {
-            speechSynthesis.cancel();
+        // Add visual feedback
+        button.classList.add('playing');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            // Use enhanced pronunciation system for native-quality audio
+            await this.pronunciation.pronounce(text, lang);
+            this.showNotification(`🔊 Playing native pronunciation for "${text}"`, 'success');
+        } catch (error) {
+            console.error('Enhanced pronunciation failed:', error);
+            this.showNotification('Using fallback pronunciation...', 'warning');
             
-            // Add visual feedback
-            button.classList.add('playing');
-            
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = this.getSpeechLang(lang);
-            utterance.rate = 0.8;
-            
-            utterance.onend = () => {
-                button.classList.remove('playing');
-            };
-            
-            utterance.onerror = () => {
-                button.classList.remove('playing');
+            // Fallback to browser TTS if enhanced pronunciation fails
+            try {
+                await this.pronunciation.fallbackToBrowserTTS(text, lang);
+            } catch (fallbackError) {
                 this.showNotification('Audio playback failed. Please try again.', 'error');
-            };
-            
-            speechSynthesis.speak(utterance);
-        } else {
-            this.showNotification('Text-to-speech is not supported in your browser', 'error');
+            }
+        } finally {
+            // Reset button state
+            button.classList.remove('playing');
+            button.innerHTML = '<i class="fas fa-volume-up"></i>';
         }
     }
 
