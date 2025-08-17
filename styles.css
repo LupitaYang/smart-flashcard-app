@@ -496,13 +496,14 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    z-index: 999999;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: fadeInModal 0.3s ease-out;
 }
 
 .modal-content {
@@ -512,6 +513,20 @@ body {
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
+    position: relative;
+    z-index: 999999;
+    box-shadow: 0 25px 80px var(--shadow-medium);
+}
+
+/* Specific Profile Modal Override */
+#profileModal {
+    z-index: 999999 !important;
+    position: fixed !important;
+}
+
+#profileModal .modal-content {
+    z-index: 999999 !important;
+    position: relative !important;
 }
 
 .modal-header {
@@ -1715,13 +1730,13 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 15000;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999999;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     animation: fadeInModal 0.3s ease-out;
 }
 
