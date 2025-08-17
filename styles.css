@@ -1714,9 +1714,9 @@ body.modal-open .card-content {
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.9);
-    color: #4a5568;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--accent-color);
+    border: 1px solid rgba(102, 126, 234, 0.2);
     min-width: 44px;
     min-height: 44px;
     width: 44px;
@@ -1725,8 +1725,9 @@ body.modal-open .card-content {
 }
 
 .user-avatar:hover {
-    background: white;
+    background: rgba(102, 126, 234, 0.2);
     transform: translateY(-1px);
+    border-color: var(--accent-color);
 }
 
 .profile-picture {
