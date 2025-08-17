@@ -138,6 +138,74 @@ body {
     font-size: 0.8rem;
 }
 
+/* Enhanced Auto-Translate Button */
+.btn-translate {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.btn-translate:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+.btn-translate:active {
+    transform: translateY(0);
+}
+
+.btn-translate::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-translate:hover::before {
+    left: 100%;
+}
+
+.btn-translate i {
+    margin-right: 0.5rem;
+    animation: translatePulse 2s infinite;
+}
+
+@keyframes translatePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.btn-translate.loading {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-translate.loading i {
+    animation: spin 1s linear infinite;
+}
+
+.btn-translate.success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
 .btn-hard {
     background: #e53e3e;
     color: white;
