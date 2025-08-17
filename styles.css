@@ -906,19 +906,35 @@ body.modal-open .card-content {
         width: 100%;
     }
 
-    /* User Dropdown Mobile */
+    /* User Dropdown Mobile - Centered in middle area */
     .user-dropdown {
         position: fixed !important;
-        top: auto !important;
-        bottom: 2rem !important;
-        left: 1rem !important;
-        right: 1rem !important;
-        width: auto !important;
-        min-width: auto !important;
-        max-width: none !important;
-        border-radius: 15px !important;
-        box-shadow: 0 10px 40px var(--shadow-medium) !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 320px !important;
+        min-width: 320px !important;
+        max-width: 90vw !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 60px var(--shadow-medium) !important;
         z-index: 1001 !important;
+        margin: 0 !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        animation: dropdownCenterSlide 0.3s ease-out !important;
+    }
+    
+    @keyframes dropdownCenterSlide {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
     }
 }
 
@@ -1034,6 +1050,13 @@ body.modal-open .card-content {
         left: 1rem;
         right: 1rem;
         justify-content: center;
+    }
+    
+    /* User Dropdown Mobile - Optimized center positioning for small screens */
+    .user-dropdown {
+        width: 280px !important;
+        min-width: 280px !important;
+        max-width: 85vw !important;
     }
 }
 
@@ -1873,8 +1896,11 @@ body.modal-open .card-content {
     }
     
     .user-dropdown {
-        min-width: 250px;
-        right: -1rem;
+        min-width: 250px !important;
+        width: 250px !important;
+        max-width: 250px !important;
+        right: -0.5rem !important;
+        margin-top: 0.5rem !important;
     }
 }
 
