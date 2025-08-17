@@ -102,6 +102,11 @@ class AuthenticatedFlashcardApp {
             if (!e.target.closest('.user-menu')) {
                 document.getElementById('userDropdown').style.display = 'none';
             }
+            
+            // Close profile modal when clicking outside
+            if (e.target.id === 'profileModal') {
+                this.hideProfile();
+            }
         });
     }
 
