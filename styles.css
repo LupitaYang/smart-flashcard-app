@@ -537,6 +537,9 @@ body {
     justify-content: center !important;
     backdrop-filter: blur(10px) !important;
     -webkit-backdrop-filter: blur(10px) !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+    isolation: isolate !important;
 }
 
 #profileModal .modal-content {
@@ -549,6 +552,8 @@ body {
     max-height: 80vh !important;
     overflow-y: auto !important;
     box-shadow: 0 25px 80px var(--shadow-medium) !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
 }
 
 .modal-header {
