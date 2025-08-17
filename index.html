@@ -131,31 +131,6 @@
                     <button id="userMenuBtn" class="btn btn-secondary user-avatar">
                         <i class="fas fa-user"></i>
                     </button>
-                    <div id="userDropdown" class="user-dropdown" style="display: none;">
-                        <div class="dropdown-header">
-                            <div class="user-avatar-large">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="user-details">
-                                <span class="user-name" id="dropdownUserName">User</span>
-                                <span class="user-email" id="dropdownUserEmail">user@example.com</span>
-                            </div>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <button id="profileBtn" class="dropdown-item">
-                            <i class="fas fa-user-edit"></i> Profile Settings
-                        </button>
-                        <button id="syncBtn" class="dropdown-item">
-                            <i class="fas fa-sync"></i> Sync Data
-                        </button>
-                        <button id="upgradeBtn" class="dropdown-item premium">
-                            <i class="fas fa-crown"></i> Upgrade to Premium
-                        </button>
-                        <div class="dropdown-divider"></div>
-                        <button id="signOutBtn" class="dropdown-item danger">
-                            <i class="fas fa-sign-out-alt"></i> Sign Out
-                        </button>
-                    </div>
                 </div>
             </div>
         </header>
@@ -423,6 +398,33 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- User Dropdown - Positioned outside app-container for proper z-index -->
+    <div id="userDropdown" class="user-dropdown" style="display: none;">
+        <div class="dropdown-header">
+            <div class="user-avatar-large">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-details">
+                <span class="user-name" id="dropdownUserName">User</span>
+                <span class="user-email" id="dropdownUserEmail">user@example.com</span>
+            </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <button id="profileBtn" class="dropdown-item">
+            <i class="fas fa-user-edit"></i> Profile Settings
+        </button>
+        <button id="syncBtn" class="dropdown-item">
+            <i class="fas fa-sync"></i> Sync Data
+        </button>
+        <button id="upgradeBtn" class="dropdown-item premium">
+            <i class="fas fa-crown"></i> Upgrade to Premium
+        </button>
+        <div class="dropdown-divider"></div>
+        <button id="signOutBtn" class="dropdown-item danger">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
     </div>
 
     <!-- Profile Settings Modal - Positioned outside app-container for proper z-index -->

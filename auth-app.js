@@ -252,19 +252,8 @@ class AuthenticatedFlashcardApp {
         document.getElementById('userDropdown').style.display = 'none';
         const profileModal = document.getElementById('profileModal');
         
-        // Force the modal to the front with maximum z-index and proper positioning
+        // Simply show the modal - let CSS handle positioning and z-index
         profileModal.style.display = 'flex';
-        profileModal.style.zIndex = '2147483647';
-        profileModal.style.position = 'fixed';
-        profileModal.style.top = '0';
-        profileModal.style.left = '0';
-        profileModal.style.width = '100vw';
-        profileModal.style.height = '100vh';
-        profileModal.style.transform = 'translateZ(999999px)';
-        
-        // Ensure it's above all other content
-        document.body.style.position = 'relative';
-        document.body.style.zIndex = '1';
         
         this.loadProfileData();
     }
@@ -272,10 +261,6 @@ class AuthenticatedFlashcardApp {
     hideProfile() {
         const profileModal = document.getElementById('profileModal');
         profileModal.style.display = 'none';
-        
-        // Reset body styles
-        document.body.style.position = '';
-        document.body.style.zIndex = '';
         
         this.clearPasswordFields();
     }
@@ -601,7 +586,17 @@ class AuthenticatedFlashcardApp {
 
     toggleUserMenu() {
         const dropdown = document.getElementById('userDropdown');
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        
+        if (dropdown.style.display === 'block') {
+            dropdown.style.display = 'none';
+        } else {
+            // Calculate position relative to the user menu button
+            const rect = userMenuBtn.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 8) + 'px'; // 8px margin
+            dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+            dropdown.style.display = 'block';
+        }
     }
 
     showUpgrade() {
