@@ -216,9 +216,10 @@
                         <span class="stat-label">Today:</span>
                         <span class="stat-value" id="todayCount">0</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item clickable" id="totalStatItem" title="Click to view all your flashcards">
                         <span class="stat-label">Total:</span>
                         <span class="stat-value" id="totalCount">0</span>
+                        <i class="fas fa-external-link-alt stat-icon"></i>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Streak:</span>
@@ -322,14 +323,63 @@
 
             <!-- Card Management -->
             <div id="cardManagement" class="card-management" style="display: none;">
-                <h2>Manage Cards</h2>
+                <div class="card-management-header">
+                    <h2><i class="fas fa-layer-group"></i> My Flashcard Library</h2>
+                    <button id="backToStudyBtn" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Study
+                    </button>
+                </div>
+                
+                <div class="library-stats">
+                    <div class="library-stat">
+                        <span class="library-stat-number" id="libraryTotalCards">0</span>
+                        <span class="library-stat-label">Total Cards</span>
+                    </div>
+                    <div class="library-stat">
+                        <span class="library-stat-number" id="libraryCategories">0</span>
+                        <span class="library-stat-label">Categories</span>
+                    </div>
+                    <div class="library-stat">
+                        <span class="library-stat-number" id="libraryLanguages">0</span>
+                        <span class="library-stat-label">Languages</span>
+                    </div>
+                </div>
+
                 <div class="filter-controls">
-                    <input type="text" id="searchCards" class="form-control" placeholder="Search cards...">
-                    <select id="categoryFilter" class="form-control">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchCards" class="form-control search-input" placeholder="Search cards, translations, or examples...">
+                    </div>
+                    <select id="categoryFilter" class="form-control filter-select">
                         <option value="">All Categories</option>
                     </select>
+                    <select id="languageFilter" class="form-control filter-select">
+                        <option value="">All Languages</option>
+                    </select>
+                    <select id="sortFilter" class="form-control filter-select">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="alphabetical">A-Z</option>
+                        <option value="difficulty">By Difficulty</option>
+                        <option value="accuracy">By Accuracy</option>
+                    </select>
                 </div>
-                <div id="cardsList" class="cards-list"></div>
+
+                <div class="cards-grid" id="cardsList">
+                    <!-- Cards will be populated here -->
+                </div>
+
+                <div class="library-actions">
+                    <button id="selectAllCards" class="btn btn-secondary">
+                        <i class="fas fa-check-square"></i> Select All
+                    </button>
+                    <button id="deleteSelectedCards" class="btn btn-danger" style="display: none;">
+                        <i class="fas fa-trash"></i> Delete Selected
+                    </button>
+                    <button id="exportSelectedCards" class="btn btn-secondary" style="display: none;">
+                        <i class="fas fa-download"></i> Export Selected
+                    </button>
+                </div>
             </div>
         </main>
 

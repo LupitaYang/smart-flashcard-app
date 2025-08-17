@@ -625,6 +625,10 @@ class WorkingAuthFlashcardApp {
         document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings());
         document.getElementById('darkModeToggle').addEventListener('click', () => this.toggleDarkMode());
         
+        // Card Library
+        document.getElementById('totalStatItem').addEventListener('click', () => this.showCardLibrary());
+        document.getElementById('backToStudyBtn').addEventListener('click', () => this.showStudyMode());
+        
         // Study Mode
         document.getElementById('startStudyBtn').addEventListener('click', () => this.startStudySession());
         document.getElementById('showAnswerBtn').addEventListener('click', () => this.showAnswer());
@@ -1111,6 +1115,19 @@ class WorkingAuthFlashcardApp {
         document.getElementById('frontTextInput').focus();
     }
 
+    showCardLibrary() {
+        this.currentMode = 'library';
+        document.getElementById('studyMode').style.display = 'none';
+        document.getElementById('addCardMode').style.display = 'none';
+        document.getElementById('cardManagement').style.display = 'block';
+        
+        this.updateLibraryStats();
+        this.renderCardLibrary();
+        this.bindLibraryEvents();
+        
+        this.showNotification(`📚 Viewing your flashcard library (${this.cards.length} cards)`, 'info');
+    }
+
     showSettings() {
         document.getElementById('settingsModal').style.display = 'flex';
     }
@@ -1279,6 +1296,257 @@ class WorkingAuthFlashcardApp {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
         }, 4000);
+    }
+
+    // Card Library Management
+    updateLibraryStats() {
+        document.getElementById('libraryTotalCards').textContent = this.cards.length;
+        
+        const categories = [...new Set(this.cards.map(card => card.category))].filter(cat => cat);
+        document.getElementById('libraryCategories').textContent = categories.length;
+        
+        const languages = [...new Set([...this.cards.map(card => card.frontLang), ...this.cards.map(card => card.backLang)])];
+        document.getElementById('libraryLanguages').textContent = languages.length;
+        
+        // Update language filter
+        const languageFilter = document.getElementById('languageFilter');
+        if (languageFilter) {
+            languageFilter.innerHTML = '<option value="">All Languages</option>';
+            languages.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang;
+                option.textContent = this.getLanguageName(lang);
+                languageFilter.appendChild(option);
+            });
+        }
+    }
+
+    renderCardLibrary() {
+        const cardsList = document.getElementById('cardsList');
+        if (!cardsList) return;
+
+        if (this.cards.length === 0) {
+            cardsList.innerHTML = `
+                <div class="empty-library">
+                    <i class="fas fa-layer-group empty-icon"></i>
+                    <h3>No flashcards yet</h3>
+                    <p>Start building your library by adding your first flashcard!</p>
+                    <button class="btn btn-primary" onclick="window.flashcardApp.showAddCardMode()">
+                        <i class="fas fa-plus"></i> Add Your First Card
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        let filteredCards = this.getFilteredCards();
+        
+        cardsList.innerHTML = filteredCards.map(card => this.createCardHTML(card)).join('');
+    }
+
+    getFilteredCards() {
+        let filtered = [...this.cards];
+        
+        // Search filter
+        const searchTerm = document.getElementById('searchCards')?.value.toLowerCase() || '';
+        if (searchTerm) {
+            filtered = filtered.filter(card => 
+                card.frontText.toLowerCase().includes(searchTerm) ||
+                card.backText.toLowerCase().includes(searchTerm) ||
+                (card.example && card.example.toLowerCase().includes(searchTerm)) ||
+                card.category.toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // Category filter
+        const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+        if (categoryFilter) {
+            filtered = filtered.filter(card => card.category === categoryFilter);
+        }
+
+        // Language filter
+        const languageFilter = document.getElementById('languageFilter')?.value || '';
+        if (languageFilter) {
+            filtered = filtered.filter(card => 
+                card.frontLang === languageFilter || card.backLang === languageFilter
+            );
+        }
+
+        // Sort filter
+        const sortFilter = document.getElementById('sortFilter')?.value || 'newest';
+        filtered.sort((a, b) => {
+            switch (sortFilter) {
+                case 'oldest':
+                    return a.created - b.created;
+                case 'alphabetical':
+                    return a.frontText.localeCompare(b.frontText);
+                case 'difficulty':
+                    return b.difficulty - a.difficulty;
+                case 'accuracy':
+                    return b.accuracy - a.accuracy;
+                case 'newest':
+                default:
+                    return b.created - a.created;
+            }
+        });
+
+        return filtered;
+    }
+
+    createCardHTML(card) {
+        const createdDate = new Date(card.created).toLocaleDateString();
+        const nextReviewDate = new Date(card.nextReview).toLocaleDateString();
+        const isOverdue = card.nextReview <= Date.now();
+        
+        const accuracyPercent = Math.round(card.accuracy * 100);
+        const difficultyStars = '★'.repeat(Math.max(1, card.difficulty));
+        
+        return `
+            <div class="library-card" data-card-id="${card.id}">
+                <div class="library-card-header">
+                    <div class="card-languages">
+                        <span class="language-badge">${this.getLanguageName(card.frontLang)}</span>
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="language-badge">${this.getLanguageName(card.backLang)}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-action-btn" onclick="window.flashcardApp.playLibraryCardAudio('${card.id}', 'front')" title="Play front audio">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <button class="card-action-btn" onclick="window.flashcardApp.editCard('${card.id}')" title="Edit card">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="card-action-btn delete" onclick="window.flashcardApp.deleteCard('${card.id}')" title="Delete card">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="library-card-content">
+                    <div class="card-front-text">
+                        <strong>${card.frontText}</strong>
+                    </div>
+                    <div class="card-back-text">
+                        ${card.backText}
+                        <button class="card-audio-btn" onclick="window.flashcardApp.playLibraryCardAudio('${card.id}', 'back')" title="Play translation audio">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                    ${card.example ? `<div class="card-example">"${card.example}"</div>` : ''}
+                    ${card.image ? `<div class="card-image"><img src="${card.image}" alt="Card image"></div>` : ''}
+                </div>
+                
+                <div class="library-card-footer">
+                    <div class="card-meta">
+                        <span class="card-category">${card.category}</span>
+                        <span class="card-stats">
+                            <i class="fas fa-chart-line"></i> ${accuracyPercent}% accuracy
+                        </span>
+                        <span class="card-difficulty" title="Difficulty: ${card.difficulty}/5">
+                            ${difficultyStars}
+                        </span>
+                    </div>
+                    <div class="card-dates">
+                        <span class="card-created">Created: ${createdDate}</span>
+                        <span class="card-review ${isOverdue ? 'overdue' : ''}">
+                            ${isOverdue ? 'Due for review!' : `Next: ${nextReviewDate}`}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    bindLibraryEvents() {
+        // Search functionality
+        const searchInput = document.getElementById('searchCards');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => this.renderCardLibrary());
+        }
+
+        // Filter functionality
+        const filters = ['categoryFilter', 'languageFilter', 'sortFilter'];
+        filters.forEach(filterId => {
+            const filter = document.getElementById(filterId);
+            if (filter) {
+                filter.addEventListener('change', () => this.renderCardLibrary());
+            }
+        });
+
+        // Library actions
+        const selectAllBtn = document.getElementById('selectAllCards');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', () => this.toggleSelectAll());
+        }
+    }
+
+    async playLibraryCardAudio(cardId, side) {
+        const card = this.cards.find(c => c.id == cardId);
+        if (!card) return;
+
+        const text = side === 'front' ? card.frontText : card.backText;
+        const lang = side === 'front' ? card.frontLang : card.backLang;
+
+        try {
+            await this.pronunciation.pronounce(text, lang);
+        } catch (error) {
+            console.error('Library card audio failed:', error);
+            this.showNotification('Audio playback failed', 'error');
+        }
+    }
+
+    editCard(cardId) {
+        const card = this.cards.find(c => c.id == cardId);
+        if (!card) return;
+
+        // Switch to add card mode and populate with existing data
+        this.showAddCardMode();
+        
+        // Populate form with card data
+        document.getElementById('frontTextInput').value = card.frontText;
+        document.getElementById('backTextInput').value = card.backText;
+        document.getElementById('frontLanguageSelect').value = card.frontLang;
+        document.getElementById('backLanguageSelect').value = card.backLang;
+        document.getElementById('exampleInput').value = card.example || '';
+        document.getElementById('categorySelect').value = card.category;
+        
+        if (card.image) {
+            this.currentImageData = card.image;
+            this.showImagePreview(card.image);
+        }
+
+        // Store the card ID for updating instead of creating new
+        this.editingCardId = cardId;
+        
+        // Change form button text
+        const submitBtn = document.querySelector('#addCardForm button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Card';
+        
+        this.showNotification(`Editing card: ${card.frontText}`, 'info');
+    }
+
+    deleteCard(cardId) {
+        const card = this.cards.find(c => c.id == cardId);
+        if (!card) return;
+
+        this.showConfirmationDialog(
+            'Delete Flashcard',
+            `Are you sure you want to delete "${card.frontText}" → "${card.backText}"?`,
+            () => {
+                this.cards = this.cards.filter(c => c.id != cardId);
+                this.saveData();
+                this.updateUI();
+                this.renderCardLibrary();
+                this.updateLibraryStats();
+                this.showNotification('Card deleted successfully', 'success');
+            },
+            true
+        );
+    }
+
+    toggleSelectAll() {
+        // This would implement bulk selection functionality
+        this.showNotification('Bulk selection coming soon! 🚀', 'info');
     }
 
     // Data export/import
