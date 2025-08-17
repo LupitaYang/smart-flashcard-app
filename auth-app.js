@@ -252,8 +252,26 @@ class AuthenticatedFlashcardApp {
         document.getElementById('userDropdown').style.display = 'none';
         const profileModal = document.getElementById('profileModal');
         
-        // Simply show the modal - let CSS handle positioning and z-index
+        // Add modal-open class to body to handle stacking contexts
+        document.body.classList.add('modal-open');
+        
+        // Ensure modal is properly positioned and visible
         profileModal.style.display = 'flex';
+        profileModal.style.position = 'fixed';
+        profileModal.style.top = '0';
+        profileModal.style.left = '0';
+        profileModal.style.width = '100%';
+        profileModal.style.height = '100%';
+        profileModal.style.zIndex = '999999999';
+        profileModal.style.transform = 'translateZ(1000px)';
+        
+        // Temporarily disable 3D transforms on flashcards to prevent stacking context issues
+        const flashcardElements = document.querySelectorAll('.flashcard, .card-content, .card-front, .card-back');
+        flashcardElements.forEach(element => {
+            element.style.transform = 'none';
+            element.style.transformStyle = 'flat';
+            element.style.zIndex = '1';
+        });
         
         this.loadProfileData();
     }
@@ -261,6 +279,17 @@ class AuthenticatedFlashcardApp {
     hideProfile() {
         const profileModal = document.getElementById('profileModal');
         profileModal.style.display = 'none';
+        
+        // Remove modal-open class from body
+        document.body.classList.remove('modal-open');
+        
+        // Restore 3D transforms for flashcards
+        const flashcardElements = document.querySelectorAll('.flashcard, .card-content, .card-front, .card-back');
+        flashcardElements.forEach(element => {
+            element.style.transform = '';
+            element.style.transformStyle = '';
+            element.style.zIndex = '';
+        });
         
         this.clearPasswordFields();
     }
