@@ -1805,27 +1805,48 @@ body {
 .stat-item.clickable {
     cursor: pointer;
     transition: all 0.3s ease;
-    border-radius: 8px;
-    padding: 0.5rem;
+    border-radius: 12px;
+    padding: 0.75rem;
     position: relative;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
 .stat-item.clickable:hover {
-    background: rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+    transform: translateY(-3px);
+    border-color: var(--accent-color);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
 }
 
-.stat-item.clickable .stat-icon {
+.stat-item.clickable::after {
+    content: '👆 Click to view library';
     position: absolute;
-    top: 0.25rem;
-    right: 0.25rem;
+    bottom: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 0.7rem;
-    opacity: 0.6;
+    color: var(--accent-color);
+    opacity: 0;
     transition: opacity 0.3s ease;
+    white-space: nowrap;
+    font-weight: 500;
 }
 
-.stat-item.clickable:hover .stat-icon {
+.stat-item.clickable:hover::after {
     opacity: 1;
+}
+
+.stat-item.clickable .stat-value {
+    color: var(--accent-color);
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(102, 126, 234, 0.2);
+}
+
+.stat-item.clickable .stat-label {
+    color: var(--text-primary);
+    font-weight: 600;
 }
 
 /* Card Library Styles */
