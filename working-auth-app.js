@@ -513,6 +513,24 @@ class WorkingAuthFlashcardApp {
                     created: Date.now(),
                     accuracy: 0,
                     timesStudied: 0
+                },
+                {
+                    id: Date.now() + 3,
+                    frontText: '你好',
+                    backText: 'Hello',
+                    frontLang: 'zh',
+                    backLang: 'en',
+                    category: '🗣️ Daily Words',
+                    example: '你好，你好吗？ - Hello, how are you?',
+                    image: null,
+                    difficulty: 0,
+                    nextReview: Date.now(),
+                    interval: 1,
+                    repetitions: 0,
+                    easeFactor: 2.5,
+                    created: Date.now(),
+                    accuracy: 0,
+                    timesStudied: 0
                 }
             ];
             this.cards = sampleCards;
@@ -860,7 +878,8 @@ class WorkingAuthFlashcardApp {
             'de': 'de-DE',
             'fr': 'fr-FR',
             'es': 'es-ES',
-            'it': 'it-IT'
+            'it': 'it-IT',
+            'zh': 'zh-CN'
         };
         return langMap[langCode] || 'en-US';
     }
@@ -916,7 +935,8 @@ class WorkingAuthFlashcardApp {
             'de': 'German',
             'fr': 'French',
             'es': 'Spanish',
-            'it': 'Italian'
+            'it': 'Italian',
+            'zh': 'Chinese (Mandarin)'
         };
         return languages[code] || code.toUpperCase();
     }
