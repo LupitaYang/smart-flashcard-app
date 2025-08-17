@@ -250,12 +250,33 @@ class AuthenticatedFlashcardApp {
     // Profile Settings Methods
     showProfile() {
         document.getElementById('userDropdown').style.display = 'none';
-        document.getElementById('profileModal').style.display = 'flex';
+        const profileModal = document.getElementById('profileModal');
+        
+        // Force the modal to the front with maximum z-index and proper positioning
+        profileModal.style.display = 'flex';
+        profileModal.style.zIndex = '2147483647';
+        profileModal.style.position = 'fixed';
+        profileModal.style.top = '0';
+        profileModal.style.left = '0';
+        profileModal.style.width = '100vw';
+        profileModal.style.height = '100vh';
+        profileModal.style.transform = 'translateZ(999999px)';
+        
+        // Ensure it's above all other content
+        document.body.style.position = 'relative';
+        document.body.style.zIndex = '1';
+        
         this.loadProfileData();
     }
 
     hideProfile() {
-        document.getElementById('profileModal').style.display = 'none';
+        const profileModal = document.getElementById('profileModal');
+        profileModal.style.display = 'none';
+        
+        // Reset body styles
+        document.body.style.position = '';
+        document.body.style.zIndex = '';
+        
         this.clearPasswordFields();
     }
 
