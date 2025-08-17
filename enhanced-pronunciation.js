@@ -39,18 +39,26 @@ class EnhancedPronunciation {
     async pronounce(text, language = 'en', options = {}) {
         if (!text || text.trim() === '') return;
 
+        // Stop any currently playing audio
+        this.stopCurrentAudio();
+
+        // For mobile compatibility, use browser TTS directly
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            // Use browser TTS directly for mobile for better compatibility
+            return this.fallbackToBrowserTTS(text, language);
+        }
+
         const cacheKey = `${text}_${language}`;
         
-        // Check cache first
+        // Check cache first for desktop
         if (this.audioCache.has(cacheKey)) {
             return this.playFromCache(cacheKey);
         }
 
-        // Stop any currently playing audio
-        this.stopCurrentAudio();
-
         try {
-            // Try services in order of preference
+            // Try services in order of preference for desktop
             const audioUrl = await this.getAudioUrl(text, language, options);
             if (audioUrl) {
                 return this.playAudio(audioUrl, cacheKey);
@@ -97,17 +105,9 @@ class EnhancedPronunciation {
 
     // Google Translate TTS (Free, high quality)
     async getGoogleTTSUrl(text, language, voiceConfig) {
-        // Google Translate TTS endpoint (unofficial but widely used)
-        const baseUrl = 'https://translate.google.com/translate_tts';
-        const params = new URLSearchParams({
-            ie: 'UTF-8',
-            q: text,
-            tl: language,
-            client: 'tw-ob',
-            textlen: text.length.toString()
-        });
-
-        return `${baseUrl}?${params.toString()}`;
+        // Google Translate TTS has CORS issues on mobile, so we'll skip it
+        // and go directly to browser TTS for better mobile compatibility
+        throw new Error('Google TTS skipped for mobile compatibility');
     }
 
     // Azure Cognitive Services TTS (Premium, requires API key)
@@ -158,6 +158,9 @@ class EnhancedPronunciation {
             // Cancel any ongoing speech
             speechSynthesis.cancel();
 
+            // Mobile-specific handling
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
             // Wait for voices to load on mobile
             const speakWithVoices = () => {
                 const utterance = new SpeechSynthesisUtterance(text);
@@ -168,27 +171,61 @@ class EnhancedPronunciation {
                 
                 if (bestVoice) {
                     utterance.voice = bestVoice;
+                    console.log(`Using voice: ${bestVoice.name} for language: ${language}`);
                 }
                 
                 utterance.lang = this.voiceMapping[language]?.voice || language;
-                utterance.rate = 0.9; // Slightly slower for better comprehension
+                utterance.rate = isMobile ? 0.8 : 0.9; // Slower on mobile for better clarity
                 utterance.pitch = 1.0;
                 utterance.volume = 1.0;
 
-                utterance.onend = () => resolve();
+                utterance.onstart = () => {
+                    console.log('Speech synthesis started');
+                };
+
+                utterance.onend = () => {
+                    console.log('Speech synthesis ended');
+                    resolve();
+                };
+
                 utterance.onerror = (error) => {
                     console.error('Speech synthesis error:', error);
                     reject(error);
                 };
 
-                // Mobile-specific: Add a small delay to ensure proper initialization
-                setTimeout(() => {
-                    try {
-                        speechSynthesis.speak(utterance);
-                    } catch (error) {
-                        reject(error);
-                    }
-                }, 100);
+                // Mobile-specific: Ensure user interaction has occurred
+                if (isMobile) {
+                    // Add longer delay for mobile initialization
+                    setTimeout(() => {
+                        try {
+                            console.log('Starting speech synthesis on mobile');
+                            speechSynthesis.speak(utterance);
+                            
+                            // Mobile fallback: Check if speech started within 2 seconds
+                            setTimeout(() => {
+                                if (speechSynthesis.speaking || speechSynthesis.pending) {
+                                    console.log('Speech synthesis is working');
+                                } else {
+                                    console.warn('Speech synthesis may not be working, trying again');
+                                    speechSynthesis.cancel();
+                                    speechSynthesis.speak(utterance);
+                                }
+                            }, 2000);
+                        } catch (error) {
+                            console.error('Mobile speech synthesis error:', error);
+                            reject(error);
+                        }
+                    }, 200);
+                } else {
+                    // Desktop: shorter delay
+                    setTimeout(() => {
+                        try {
+                            speechSynthesis.speak(utterance);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 100);
+                }
             };
 
             // Check if voices are already loaded
@@ -197,18 +234,26 @@ class EnhancedPronunciation {
                 speakWithVoices();
             } else {
                 // Wait for voices to load (important for mobile)
+                let voicesLoaded = false;
+                
                 speechSynthesis.onvoiceschanged = () => {
-                    speechSynthesis.onvoiceschanged = null; // Remove listener
-                    speakWithVoices();
+                    if (!voicesLoaded) {
+                        voicesLoaded = true;
+                        speechSynthesis.onvoiceschanged = null; // Remove listener
+                        speakWithVoices();
+                    }
                 };
                 
                 // Fallback timeout for mobile browsers that don't fire the event
                 setTimeout(() => {
-                    if (speechSynthesis.onvoiceschanged) {
-                        speechSynthesis.onvoiceschanged = null;
+                    if (!voicesLoaded) {
+                        voicesLoaded = true;
+                        if (speechSynthesis.onvoiceschanged) {
+                            speechSynthesis.onvoiceschanged = null;
+                        }
                         speakWithVoices();
                     }
-                }, 1000);
+                }, isMobile ? 2000 : 1000); // Longer timeout for mobile
             }
         });
     }

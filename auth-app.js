@@ -43,6 +43,69 @@ class AuthenticatedFlashcardApp {
         this.bindEvents();
         this.applyTheme();
         this.checkAuthState();
+        this.initializeMobileAudioContext();
+    }
+
+    // Initialize mobile audio context to handle user interaction requirements
+    initializeMobileAudioContext() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            this.mobileAudioInitialized = false;
+            
+            // Add a one-time click listener to initialize audio context
+            const initializeAudio = () => {
+                if (!this.mobileAudioInitialized) {
+                    // Create a silent audio context to unlock audio on mobile
+                    if ('speechSynthesis' in window) {
+                        // Test speech synthesis to unlock it
+                        const testUtterance = new SpeechSynthesisUtterance('');
+                        testUtterance.volume = 0;
+                        speechSynthesis.speak(testUtterance);
+                        speechSynthesis.cancel();
+                    }
+                    
+                    this.mobileAudioInitialized = true;
+                    console.log('Mobile audio context initialized');
+                    
+                    // Remove the listener after first interaction
+                    document.removeEventListener('touchstart', initializeAudio);
+                    document.removeEventListener('click', initializeAudio);
+                }
+            };
+            
+            // Listen for first user interaction
+            document.addEventListener('touchstart', initializeAudio, { once: true });
+            document.addEventListener('click', initializeAudio, { once: true });
+        } else {
+            this.mobileAudioInitialized = true;
+        }
+    }
+
+    // Initialize mobile audio if needed (called before audio playback)
+    async initializeMobileAudio() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile && !this.mobileAudioInitialized) {
+            // Try to initialize audio context
+            try {
+                if ('speechSynthesis' in window) {
+                    // Create a silent utterance to unlock speech synthesis
+                    const testUtterance = new SpeechSynthesisUtterance('');
+                    testUtterance.volume = 0;
+                    speechSynthesis.speak(testUtterance);
+                    speechSynthesis.cancel();
+                    
+                    this.mobileAudioInitialized = true;
+                    console.log('Mobile audio initialized on demand');
+                }
+            } catch (error) {
+                console.warn('Failed to initialize mobile audio:', error);
+                throw new Error('Audio requires user interaction on mobile devices. Please tap the screen first.');
+            }
+        }
+        
+        return Promise.resolve();
     }
 
     // Simple Authentication Check
@@ -1102,20 +1165,15 @@ class AuthenticatedFlashcardApp {
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
         try {
-            // For mobile browsers, always use browser TTS as it's more reliable
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            // Initialize audio context for mobile if needed
+            await this.initializeMobileAudio();
             
-            if (isMobile) {
-                // Use browser TTS directly for mobile for better compatibility
-                await this.pronunciation.fallbackToBrowserTTS(text, lang);
-                this.showNotification(`🔊 Playing pronunciation for "${text}"`, 'success');
-            } else {
-                // Use enhanced pronunciation system for desktop
-                await this.pronunciation.pronounce(text, lang);
-            }
+            // Use enhanced pronunciation system which handles mobile detection internally
+            await this.pronunciation.pronounce(text, lang);
+            this.showNotification(`🔊 Playing pronunciation for "${text}"`, 'success');
         } catch (error) {
             console.error('Audio playback failed:', error);
-            this.showNotification('Audio not available for this language', 'warning');
+            this.showNotification('Audio playback failed. Please try again.', 'warning');
         } finally {
             // Reset button state
             button.classList.remove('playing');
@@ -1160,19 +1218,15 @@ class AuthenticatedFlashcardApp {
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
         try {
-            // Use enhanced pronunciation system for native-quality audio
-            await this.pronunciation.pronounce(text, lang);
-            this.showNotification(`🔊 Playing native pronunciation for "${text}"`, 'success');
-        } catch (error) {
-            console.error('Enhanced pronunciation failed:', error);
-            this.showNotification('Using fallback pronunciation...', 'warning');
+            // Initialize audio context for mobile if needed
+            await this.initializeMobileAudio();
             
-            // Fallback to browser TTS if enhanced pronunciation fails
-            try {
-                await this.pronunciation.fallbackToBrowserTTS(text, lang);
-            } catch (fallbackError) {
-                this.showNotification('Audio playback failed. Please try again.', 'error');
-            }
+            // Use enhanced pronunciation system
+            await this.pronunciation.pronounce(text, lang);
+            this.showNotification(`🔊 Playing pronunciation for "${text}"`, 'success');
+        } catch (error) {
+            console.error('Audio playback failed:', error);
+            this.showNotification('Audio playback failed. Please try again.', 'error');
         } finally {
             // Reset button state
             button.classList.remove('playing');
@@ -1736,7 +1790,11 @@ class AuthenticatedFlashcardApp {
         const lang = side === 'front' ? card.frontLang : card.backLang;
 
         try {
+            // Initialize audio context for mobile if needed
+            await this.initializeMobileAudio();
+            
             await this.pronunciation.pronounce(text, lang);
+            this.showNotification(`🔊 Playing pronunciation for "${text}"`, 'success');
         } catch (error) {
             console.error('Library card audio failed:', error);
             this.showNotification('Audio playback failed', 'error');
