@@ -902,7 +902,7 @@ body {
 /* Study Session Timer */
 .session-timer {
     position: fixed;
-    top: 1rem;
+    top: 5rem;
     right: 1rem;
     background: var(--card-background);
     border-radius: 10px;
