@@ -120,21 +120,40 @@ class AuthenticatedFlashcardApp {
             return;
         }
 
+        // Validate email format
+        if (!this.isValidEmail(email)) {
+            this.showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+
         this.showAuthLoading(true);
 
         // Simulate authentication delay
         setTimeout(() => {
-            // For demo purposes, accept any email/password combination
-            // In production, this would verify against a real database
-            this.user = {
-                uid: 'user_' + Date.now(),
-                email: email,
-                displayName: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1)
-            };
+            // Check if user exists in localStorage (for demo purposes)
+            const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userKey = email.toLowerCase();
             
-            localStorage.setItem('currentUser', JSON.stringify(this.user));
-            this.showNotification('Welcome back! 🎉', 'success');
-            this.onUserSignedIn();
+            if (existingUsers[userKey] && existingUsers[userKey].password === password) {
+                // User exists and password matches
+                this.user = {
+                    uid: existingUsers[userKey].uid,
+                    email: existingUsers[userKey].email,
+                    displayName: existingUsers[userKey].displayName,
+                    firstName: existingUsers[userKey].firstName,
+                    lastName: existingUsers[userKey].lastName,
+                    emailVerified: true,
+                    authMethod: 'email'
+                };
+                
+                localStorage.setItem('currentUser', JSON.stringify(this.user));
+                this.showNotification(`Welcome back, ${this.user.displayName}! 🎉`, 'success');
+                this.onUserSignedIn();
+            } else {
+                // Invalid credentials
+                this.showNotification('Invalid email or password. Please try again.', 'error');
+            }
+            
             this.showAuthLoading(false);
         }, 1000);
     }
@@ -148,6 +167,12 @@ class AuthenticatedFlashcardApp {
 
         if (!name || !email || !password || !confirmPassword) {
             this.showNotification('Please fill in all fields', 'error');
+            return;
+        }
+
+        // Validate email format
+        if (!this.isValidEmail(email)) {
+            this.showNotification('Please enter a valid email address', 'error');
             return;
         }
 
@@ -170,18 +195,60 @@ class AuthenticatedFlashcardApp {
 
         // Simulate signup delay
         setTimeout(() => {
+            // Check if user already exists
+            const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userKey = email.toLowerCase();
+            
+            if (existingUsers[userKey]) {
+                this.showNotification('An account with this email already exists. Please sign in instead.', 'error');
+                this.showAuthLoading(false);
+                return;
+            }
+
+            // Parse full name into first and last name
+            const nameParts = name.trim().split(' ');
+            const firstName = nameParts[0];
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
             // Create new user
-            this.user = {
-                uid: 'user_' + Date.now(),
+            const newUser = {
+                uid: 'email_' + Date.now(),
                 email: email,
-                displayName: name
+                displayName: name,
+                firstName: firstName,
+                lastName: lastName,
+                password: password, // In production, this would be hashed
+                emailVerified: true, // For demo purposes
+                authMethod: 'email',
+                createdAt: new Date().toISOString()
+            };
+
+            // Store user in registered users
+            existingUsers[userKey] = newUser;
+            localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+
+            // Set current user (excluding password for security)
+            this.user = {
+                uid: newUser.uid,
+                email: newUser.email,
+                displayName: newUser.displayName,
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                emailVerified: newUser.emailVerified,
+                authMethod: newUser.authMethod
             };
 
             localStorage.setItem('currentUser', JSON.stringify(this.user));
-            this.showNotification('Account created successfully! Welcome! 🎉', 'success');
+            this.showNotification(`Account created successfully! Welcome, ${this.user.firstName}! 🎉`, 'success');
             this.onUserSignedIn();
             this.showAuthLoading(false);
         }, 1500);
+    }
+
+    // Email validation helper method
+    isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 
     signInWithGoogle() {
