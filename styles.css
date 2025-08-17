@@ -910,12 +910,15 @@ body.modal-open .card-content {
     .user-dropdown {
         position: fixed !important;
         top: auto !important;
-        bottom: 1rem !important;
+        bottom: 2rem !important;
         left: 1rem !important;
         right: 1rem !important;
         width: auto !important;
         min-width: auto !important;
         max-width: none !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 40px var(--shadow-medium) !important;
+        z-index: 1001 !important;
     }
 }
 
